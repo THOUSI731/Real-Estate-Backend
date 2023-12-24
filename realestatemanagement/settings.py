@@ -23,7 +23,7 @@ load_dotenv()
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = "django-insecure-t78o2o$djc+9^9-4@man1pcsa2it_f4w1=3n&7#!tq^l_ls#1_"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "properties.apps.PropertiesConfig",
     "tenants.apps.TenantsConfig",
+    "superadmin.apps.SuperadminConfig",
 ]
 
 MIDDLEWARE = [
@@ -178,5 +179,5 @@ CORS_ALLOWED_ORIGINS = [
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
-# 
-AUTH_USER_MODEL="accounts.User"
+#
+AUTH_USER_MODEL = "accounts.User"

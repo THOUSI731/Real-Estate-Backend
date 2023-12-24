@@ -55,4 +55,4 @@ class Unit(AbstractDate):
     unit_status=models.CharField(max_length=10,default=UnitStatus.AVAILABLE,choices=UnitStatus.choices)
     
     def __str__(self) -> str:
-        return self.property_reference.name
+        return f"{self.property_reference.name} - {self.unit_type}"

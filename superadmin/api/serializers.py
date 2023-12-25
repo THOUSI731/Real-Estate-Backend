@@ -3,6 +3,7 @@ from properties.models import Property, Unit, Feature
 from tenants.api.serializers import TenantAgreementSerializer
 from tenants.models import TenantAgreement
 from accounts.models import User
+from tenants.models import TenantDocument
 
 
 class PropertyPOSTSerializer(serializers.ModelSerializer):
@@ -111,30 +112,44 @@ class UnitPOSTSerializer(serializers.ModelSerializer):
     def unit_status(self, value):
         return value.lower()
 
+
 class TenantAgreementPOSTSerializer(serializers.ModelSerializer):
-    tenant=serializers.EmailField(max_length=50)
+    tenant = serializers.EmailField(max_length=50)
+
     class Meta:
-        model=TenantAgreement
-        fields=("tenant","start_date","end_date","monthly_rent_date")
-    
+        model = TenantAgreement
+        fields = ("tenant", "start_date", "end_date", "monthly_rent_date")
+
     # Frontend Input is Like Date with Time so i splitted with "T" part and takes the first dat that is date
-    def validate_start_date(self,value):
+    def validate_start_date(self, value):
         return value.split("T")[0]
-    
-    def validate_end_date(self,value):
+
+    def validate_end_date(self, value):
         return value.split("T")[0]
-    
-    def validate_monthly_rent_date(self,value):
+
+    def validate_monthly_rent_date(self, value):
         return value.split("T")[0]
-    
+
+
 from tenants.api.serializers import TenantProfileSerializer
+
+
 class TenantAgreementSerializer(serializers.ModelSerializer):
     class Meta:
-        model=TenantAgreement
-        fields=("id","start_date","end_date","monthly_rent_date")
-        
-class TenantGETProfileSerializer(serializers.ModelSerializer):
-    profile=TenantProfileSerializer(source="tenant_profile")
+        model = TenantAgreement
+        fields = ("id", "start_date", "end_date", "monthly_rent_date")
+
+
+class TenantDocumentSerializer(serializers.ModelSerializer):
     class Meta:
-        model=User
-        fields=("id","first_name","last_name","email","phone_number","profile")
+        model = TenantDocument
+        fields = ("document_name", "document_number")
+
+
+class TenantGETProfileSerializer(serializers.ModelSerializer):
+    profile = TenantProfileSerializer(source="tenant_profile")
+    documents = TenantDocumentSerializer(source="tenant_documents")
+
+    class Meta:
+        model = User
+        fields = ("id", "first_name", "last_name", "email", "phone_number", "profile")

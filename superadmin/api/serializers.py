@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from properties.models import Property, Unit, Feature
 from tenants.api.serializers import TenantAgreementSerializer
+from tenants.models import TenantAgreement
+from accounts.models import User
 
 
 class PropertyPOSTSerializer(serializers.ModelSerializer):
@@ -23,7 +25,7 @@ class PropertyPOSTSerializer(serializers.ModelSerializer):
         )
 
     def validate_pin_code(self, value):
-        if not value.is_digit() or len(value) != 6:
+        if not value.isdigit() or len(value) != 6:
             raise serializers.ValidationError("Pin code Must Be 6 digit number")
         return value
 
@@ -34,7 +36,15 @@ class PropertyPOSTSerializer(serializers.ModelSerializer):
         return value.lower()
 
 
+class FeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feature
+        fields = ("id", "name")
+
+
 class PropertyGETSerializer(serializers.ModelSerializer):
+    features = FeatureSerializer(many=True)
+
     class Meta:
         model = Property
         fields = (
@@ -44,12 +54,6 @@ class PropertyGETSerializer(serializers.ModelSerializer):
             "features",
         )
         read_only_fields = ("id",)
-
-
-class FeatureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Feature
-        fields = ("id", "name")
 
 
 class PropertyUnitGETSerializer(serializers.ModelSerializer):
@@ -88,22 +92,49 @@ class PropertyProfileGETSerializer(serializers.ModelSerializer):
             "property_units",
         )
 
+
 class UnitPOSTSerializer(serializers.ModelSerializer):
-    features=serializers.ListField(child=serializers.CharField(min_length=5,max_length=50))
-    
+    features = serializers.ListField(
+        child=serializers.CharField(min_length=5, max_length=50)
+    )
+
     class Meta:
-        model=Unit
-        fields=("unit_type","rent_cost","unit_status","features")
-        
+        model = Unit
+        fields = ("unit_type", "rent_cost", "unit_status", "features")
+
     def validate_features(self, value):
         return [tag.title() for tag in value]
-    
-    def unit_type(self,value):
-        return value.lower()
-    
-    def unit_status(self,value):
+
+    def unit_type(self, value):
         return value.lower()
 
-        
-        
+    def unit_status(self, value):
+        return value.lower()
+
+class TenantAgreementPOSTSerializer(serializers.ModelSerializer):
+    tenant=serializers.EmailField(max_length=50)
+    class Meta:
+        model=TenantAgreement
+        fields=("tenant","start_date","end_date","monthly_rent_date")
     
+    # Frontend Input is Like Date with Time so i splitted with "T" part and takes the first dat that is date
+    def validate_start_date(self,value):
+        return value.split("T")[0]
+    
+    def validate_end_date(self,value):
+        return value.split("T")[0]
+    
+    def validate_monthly_rent_date(self,value):
+        return value.split("T")[0]
+    
+from tenants.api.serializers import TenantProfileSerializer
+class TenantAgreementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=TenantAgreement
+        fields=("id","start_date","end_date","monthly_rent_date")
+        
+class TenantGETProfileSerializer(serializers.ModelSerializer):
+    profile=TenantProfileSerializer(source="tenant_profile")
+    class Meta:
+        model=User
+        fields=("id","first_name","last_name","email","phone_number","profile")

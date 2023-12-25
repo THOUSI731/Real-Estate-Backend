@@ -9,7 +9,7 @@ class Profile(models.Model):
      address=models.CharField(max_length=100)
      city=models.CharField(max_length=50)
      state=models.CharField(max_length=50)
-     state=models.CharField(max_length=50)
+     country=models.CharField(max_length=50,default="India")
      pin_code=models.CharField(max_length=20)    
      
      def __str__(self) -> str:

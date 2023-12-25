@@ -3,12 +3,19 @@ from ..models import Profile, TenantAgreement
 from accounts.models import User
 
 
+class TenantProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ("profile_picture", "address", "city", "state", "country", "pin_code")
+
+
 class TenantGETSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
+    profile = TenantProfileSerializer(source="tenant_profile")
 
     class Meta:
         model = User
-        fields = ("full_name", "email", "phone_number")
+        fields = ("full_name", "email", "phone_number","profile")
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
@@ -122,16 +129,3 @@ class TenantPOSTSerializer(serializers.ModelSerializer):
             self.instance.tenant_profile.save()
         return instance
 
-
-class TenantProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ("profile_picture", "address", "city", "state", "country", "pin_code")
-
-
-class TenantGETSerializer(serializers.ModelSerializer):
-    profile = TenantProfileSerializer(source="tenant_profile")
-
-    class Meta:
-        model = User
-        fields = ("first_name", "last_name", "email", "phone_number", "profile")

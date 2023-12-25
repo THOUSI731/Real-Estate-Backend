@@ -378,7 +378,6 @@ class TenantProfileDetailView(APIView):
         tags=["Tenant Profile Detail View"],
         operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
         operation_summary="This endpoint is used for Tenant Detail View including profile ",
-        request_body=TenantGETProfileSerializer,
         responses={
             200: TenantGETProfileSerializer,
         },

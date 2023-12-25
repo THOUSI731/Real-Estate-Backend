@@ -5,6 +5,7 @@ from .api.serializers import RegisterationSerializer, MyTokenObtainPairSerialize
 from rest_framework import status
 from .models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
+from drf_yasg.utils import swagger_auto_schema
 
 
 @api_view(["GET"])
@@ -12,7 +13,7 @@ def test(request):
     return Response("Test Success")
 
 
-class TenantRegisterationAPIView(APIView):  
+class TenantRegisterationAPIView(APIView):
     def post(self, request):
         serializer = RegisterationSerializer(data=request.data)
         if not serializer.is_valid():
@@ -23,16 +24,18 @@ class TenantRegisterationAPIView(APIView):
             email=serializer.validated_data.get("email", None),
             phone_number=serializer.validated_data.get("phone_number", None),
             username=serializer.validated_data.get("username", None),
-            is_tenant=True
+            is_tenant=True,
         )
         user.set_password(serializer.validated_data.get("password"))
         user.save(update_fields=["password"])
         # created signals for creating tenant profile instance
         return Response(
-            {"data":"Tenant Registered Successfully"}, status=status.HTTP_201_CREATED
+            {"data": "Tenant Registered Successfully"}, status=status.HTTP_201_CREATED
         )
 
-    
+
 # for tenant and user login apiview
+
 class UserLoginAPIView(TokenObtainPairView):
-    serializer_class=MyTokenObtainPairSerializer
+
+    serializer_class = MyTokenObtainPairSerializer

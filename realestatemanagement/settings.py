@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "properties.apps.PropertiesConfig",
     "tenants.apps.TenantsConfig",
     "superadmin.apps.SuperadminConfig",
+    "rest_framework_swagger",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -180,3 +182,16 @@ MEDIA_URL = "/media/"
 
 #
 AUTH_USER_MODEL = "accounts.User"
+
+# Swagger Settings
+SWAGGER_SETTINGS = {
+    "TITLE": "Doodle",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "in": "header",
+            "name": "Authorization",
+            "type": "apiKey",
+        },
+    },
+}

@@ -21,6 +21,8 @@ from accounts.models import User
 from tenants.api.serializers import TenantGETSerializer
 from tenants.models import TenantAgreement
 from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 @api_view(["GET"])
@@ -34,6 +36,22 @@ class PropertyListCreateAPIView(APIView):
     permission_classes = (IsAuthenticated, IsAdminUser)
 
     # Here Listing All the Properties of SuperAdmin means Admin
+    @swagger_auto_schema(
+        tags=["Property"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property List",
+        manual_parameters=[
+            openapi.Parameter(
+                "search",
+                openapi.IN_QUERY,
+                description="Search term",
+                type=openapi.TYPE_STRING,
+            ),
+        ],
+        responses={
+            200: PropertyGETSerializer,
+        },
+    )
     def get(self, request):
         search = request.GET.get("search", None)
         Q_obj_filter = Q()
@@ -51,6 +69,16 @@ class PropertyListCreateAPIView(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
     # Here Creating New Properties
+    @swagger_auto_schema(
+        tags=["Property"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property Create",
+        request_body=PropertyPOSTSerializer,
+        responses={
+            201: PropertyPOSTSerializer,
+            400: PropertyPOSTSerializer,
+        },
+    )
     def post(self, request):
         serializer = PropertyPOSTSerializer(data=request.data)
         if not serializer.is_valid():
@@ -86,12 +114,18 @@ class PropertyDetailUpdateAPIView(APIView):
         except:
             raise NotFound({"data": "Property Not Found"})
 
-    permission_classes = (AllowAny,)
-
+    @swagger_auto_schema(
+        tags=["Property Details"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property Detailed Fetch",
+        responses={
+            200: PropertyProfileGETSerializer,
+        },
+    )
     def get(self, request, pk=None):
         search = request.GET.get("search", None)
         Q_obj_base = Q(id=pk)
-        Q_obj_filter=Q()
+        Q_obj_filter = Q()
         if search:
             Q_obj_filter |= Q(property_units__features__name__istartswith=search)
             Q_obj_base &= Q_obj_filter
@@ -109,6 +143,16 @@ class PropertyDetailUpdateAPIView(APIView):
         serializer = PropertyProfileGETSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        tags=["Property Details"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property  Update",
+        request_body=PropertyPOSTSerializer,
+        responses={
+            201: PropertyPOSTSerializer,
+            400: PropertyPOSTSerializer,
+        },
+    )
     def put(self, request, pk=None):
         instance = self.get_property_object_or_404(id=pk)
         serializer = PropertyPOSTSerializer(data=request.data)
@@ -131,6 +175,15 @@ class PropertyDetailUpdateAPIView(APIView):
         instance.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        tags=["Property Details"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property  Delete",
+        responses={
+            204: "Property Deleted Successfully",
+            404: "Property Not Found",
+        },
+    )
     def delete(self, request, pk=None):
         instance = self.get_property_object_or_404(pk)
         instance.delete()

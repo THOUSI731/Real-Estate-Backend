@@ -198,6 +198,16 @@ class PropertyUnitCreateAPIView(APIView):
 
     # Here the pk is refered to the property id
     # cause based on property i am creating property unit Property (One) to (Many) Property Unit
+    @swagger_auto_schema(
+        tags=["Property Unit"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property Unit Creating",
+        request_body=UnitPOSTSerializer,
+        responses={
+            201: UnitPOSTSerializer,
+            400: UnitPOSTSerializer,
+        },
+    )
     def post(self, request, pk=None):
         serializer = UnitPOSTSerializer(data=request.data)
         if not serializer.is_valid():
@@ -224,6 +234,14 @@ class PropertyUnitDetailAPIView(APIView):
     permission_classes = (IsAuthenticated, IsAdminUser)
 
     # In this class the url path is like property/<int:pk>/unit/<int:unit_pk>/
+    @swagger_auto_schema(
+        tags=["Property Unit Detail"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit]",
+        responses={
+            200: PropertyUnitGETSerializer,
+        },
+    )
     def get(self, request, unit_pk=None, *args, **kwargs):
         try:
             instance = Unit.objects.prefetch_related(
@@ -236,6 +254,16 @@ class PropertyUnitDetailAPIView(APIView):
         serializer = PropertyUnitGETSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        tags=["Property Unit Detail"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit]",
+        request_body=UnitPOSTSerializer,
+        responses={
+            201: UnitPOSTSerializer,
+            400: UnitPOSTSerializer,
+        },
+    )
     def put(self, request, unit_pk=None, *args, **kwargs):
         instance = get_object_or_404(Unit, id=unit_pk)
         serializer = UnitPOSTSerializer(data=request.data)
@@ -258,6 +286,14 @@ class PropertyUnitDetailAPIView(APIView):
         instance.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        tags=["Property Unit Detail"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit]",
+        responses={
+            204: "Property Unit Deleted Successfully",
+        },
+    )
     def delete(self, request, unit_pk=None, *args, **kwargs):
         instance = get_object_or_404(Unit, id=unit_pk)
         instance.delete()
@@ -271,6 +307,14 @@ class TenantListAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated, IsAdminUser)
 
+    @swagger_auto_schema(
+        tags=["Tenants"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Listing Tenants(User)",
+        responses={
+            200: TenantGETSerializer,
+        },
+    )
     def get(self, request, *args, **kwargs):
         queryset = User.objects.filter(is_tenant=True).select_related("tenant_profile")
         paginator = SmallResultPagination()
@@ -289,7 +333,16 @@ class TenantAgreementCreateAPIView(APIView):
 
     # Assign a tenant with a unit under a property with details like agreement end date, monthly rent date.
     # Here pk refers to the Unit
-    def get(self, request, pk=None, *args, **kwargs):
+    @swagger_auto_schema(
+        tags=["Tenant Agreement"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Tenant Agreement Create pk refers to the property_unit tenant object getting through email",
+        request_body=TenantAgreementPOSTSerializer,
+        responses={
+            201: TenantAgreementPOSTSerializer,
+        },
+    )
+    def post(self, request, pk=None, *args, **kwargs):
         serializer = TenantAgreementPOSTSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -316,11 +369,20 @@ class TenantProfileDetailView(APIView):
     def get_tenant_object_or_404(self, id):
         try:
             return User.objects.select_related("tenant_profile").prefetch_related(
-                "tenant_agreements"
+                "tenant_agreements","tenant_documents"
             )
         except:
             raise NotFound("Tenant Not Found")
 
+    @swagger_auto_schema(
+        tags=["Tenant Profile Detail View"],
+        operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
+        operation_summary="This endpoint is used for Tenant Detail View including profile ",
+        request_body=TenantGETProfileSerializer,
+        responses={
+            200: TenantGETProfileSerializer,
+        },
+    )
     def get(self, request, pk=None):
         instance = self.get_tenant_object_or_404(pk)
         serializer = TenantGETProfileSerializer(instance)

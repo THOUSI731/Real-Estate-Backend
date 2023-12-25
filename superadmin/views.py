@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -18,10 +17,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.decorators import permission_classes, authentication_classes
 from accounts.models import User
-from tenants.api.serializers import TenantPOSTSerializer, TenantGETSerializer
+from tenants.api.serializers import TenantGETSerializer
 from tenants.models import TenantAgreement
+from django.db.models import Q
 
 
 @api_view(["GET"])
@@ -32,10 +31,15 @@ def test(request):
 # 2.2.Property Listing Module
 class PropertyListCreateAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser)
+
     # Here Listing All the Properties of SuperAdmin means Admin
     def get(self, request):
-        queryset = Property.objects.all().prefetch_related("features")
+        search = request.GET.get("search", None)
+        Q_obj_filter = Q()
+        if search:
+            Q_obj_filter |= Q(features__name__istartswith=search)
+        queryset = Property.objects.prefetch_related("features").filter(Q_obj_filter)
         # created pagination to reduce load time
         paginator = SmallResultPagination()
         paginated_data = paginator.paginate_queryset(queryset, request)
@@ -73,7 +77,7 @@ class PropertyListCreateAPIView(APIView):
 
 class PropertyDetailUpdateAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     # For PUT and Delete Operation
     def get_property_object_or_404(self, id):
@@ -85,11 +89,16 @@ class PropertyDetailUpdateAPIView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, pk=None):
+        search = request.GET.get("search", None)
+        Q_obj_base = Q(id=pk)
+        if search:
+            Q_obj_filter |= Q(property_units__features__name__istartswith=search)
+            Q_obj_base &= Q_obj_filter
         # property profile view with units and assigned tenant information
         try:
             instance = Property.objects.prefetch_related(
                 "property_units__tenant_agreement_units__tenant", "features"
-            ).get(id=pk)
+            ).filter(Q_obj_base)
         except:
             return Response(
                 {"data": "Property Not Found"}, status=status.HTTP_404_NOT_FOUND
@@ -131,7 +140,7 @@ class PropertyDetailUpdateAPIView(APIView):
 
 class PropertyUnitCreateAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     # Here the pk is refered to the property id
     # cause based on property i am creating property unit Property (One) to (Many) Property Unit
@@ -158,7 +167,7 @@ class PropertyUnitCreateAPIView(APIView):
 
 class PropertyUnitDetailAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     # In this class the url path is like property/<int:pk>/unit/<int:unit_pk>/
     def get(self, request, unit_pk=None, *args, **kwargs):
@@ -206,7 +215,7 @@ class PropertyUnitDetailAPIView(APIView):
 
 class TenantListAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     def get(self, request, *args, **kwargs):
         queryset = User.objects.filter(is_tenant=True).select_related("tenant_profile")
@@ -222,7 +231,7 @@ class TenantListAPIView(APIView):
 
 class TenantAgreementCreateAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     # Assign a tenant with a unit under a property with details like agreement end date, monthly rent date.
     # Here pk refers to the Unit
@@ -248,7 +257,7 @@ class TenantAgreementCreateAPIView(APIView):
 # Show tenant profile view with personal information and rental information
 class TenantProfileDetailView(APIView):
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser)
 
     def get_tenant_object_or_404(self, id):
         try:

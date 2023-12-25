@@ -42,27 +42,25 @@ class TenantProfileGetUpdateAPIView(APIView):
             "first_name", instance.first_name
         )
         instance.last_name = serializer.validated_data.get(
-            "first_name", instance.last_name
+            "last_name", instance.last_name
         )
-        instance.email = serializer.validated_data.get("first_name", instance.email)
+        instance.email = serializer.validated_data.get("email", instance.email)
         instance.phone_number = serializer.validated_data.get(
-            "first_name", instance.phone_numbet
+            "phone_number", instance.phone_number
         )
-        instance.username = serializer.validated_data.get(
-            "first_name", instance.username
-        )
+        instance.username = serializer.validated_data.get("username", instance.username)
         instance.save()
         # Profile Instance Updating
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-   
+
     @swagger_auto_schema(
         tags=["User Tenant Profile Detail View"],
         operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
         operation_summary="This endpoint is used for Deleting the Account",
         responses={
             204: "Account Deleted Successfully",
-            404:"Account Not Found",
+            404: "Account Not Found",
         },
     )
     def delete(self, request, format=None):

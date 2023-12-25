@@ -91,6 +91,7 @@ class PropertyDetailUpdateAPIView(APIView):
     def get(self, request, pk=None):
         search = request.GET.get("search", None)
         Q_obj_base = Q(id=pk)
+        Q_obj_filter=Q()
         if search:
             Q_obj_filter |= Q(property_units__features__name__istartswith=search)
             Q_obj_base &= Q_obj_filter

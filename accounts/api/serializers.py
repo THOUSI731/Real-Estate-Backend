@@ -7,6 +7,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 # Serializer for Tenant Registeration
 class RegisterationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={"input_type": "password"}, write_only=True)
+    email=serializers.EmailField()
 
     class Meta:
         model = User
@@ -30,6 +31,7 @@ class RegisterationSerializer(serializers.ModelSerializer):
                 "Password and Confirm Password Doesn't Match"
             )
         return attrs
+    
 
 
 

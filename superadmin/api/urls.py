@@ -20,5 +20,5 @@ urlpatterns = [
     ),
     path("tenants/", views.TenantListAPIView.as_view(), name="tenant-list-view"),
     path("tenants/agreement/", views.TenantAgreementCreateAPIView.as_view(), name="tenant-list-view"),
-    path("tenants/profile/", views.TenantProfileDetailView.as_view(), name="tenant-list-view"),
+    path("tenants/profile/<int:pk>/", views.TenantProfileDetailView.as_view(), name="tenant-list-view"),
 ]

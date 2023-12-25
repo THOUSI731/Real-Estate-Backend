@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Profile, TenantAgreement
+from ..models import Profile, TenantAgreement, TenantDocument
 from accounts.models import User
 
 
@@ -9,13 +9,20 @@ class TenantProfileSerializer(serializers.ModelSerializer):
         fields = ("profile_picture", "address", "city", "state", "country", "pin_code")
 
 
+class TenantDocumentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TenantDocument
+        fields = ("document_name", "document_number", "document_image", "upload_date")
+
+
 class TenantGETSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     profile = TenantProfileSerializer(source="tenant_profile")
+    documents = TenantDocumentsSerializer(source="tenant_documents", many=True)
 
     class Meta:
         model = User
-        fields = ("full_name", "email", "phone_number","profile")
+        fields = ("id", "full_name", "email", "phone_number", "profile", "documents")
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
@@ -40,11 +47,18 @@ class TenantProfilePOSTSerializer(serializers.ModelSerializer):
         return value
 
 
+class TenantDocumentPOSTSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TenantDocument
+        fields = ("document_name", "document_number", "document_image")
+
+
 class TenantPOSTSerializer(serializers.ModelSerializer):
     profile = TenantProfilePOSTSerializer(source="tenant_profile")
     email = serializers.EmailField()
     username = serializers.CharField()
     phone_number = serializers.CharField()
+    documents = TenantDocumentPOSTSerializer(source="tenant_documents")
 
     class Meta:
         model = User
@@ -55,6 +69,7 @@ class TenantPOSTSerializer(serializers.ModelSerializer):
             "username",
             "phone_number",
             "profile",
+            "documents",
         )
 
     def validate_email(self, value):
@@ -91,6 +106,7 @@ class TenantPOSTSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", {})
+        documents_data = validated_data.pop("documents", {})
         if profile_data:
             tenant_profile_serializer = TenantProfilePOSTSerializer(
                 instance=self.instance.tenant_profile, data=profile_data
@@ -128,4 +144,3 @@ class TenantPOSTSerializer(serializers.ModelSerializer):
             )
             self.instance.tenant_profile.save()
         return instance
-

@@ -131,9 +131,13 @@ class PropertyDetailUpdateAPIView(APIView):
             Q_obj_base &= Q_obj_filter
         # property profile view with units and assigned tenant information
         try:
-            instance = Property.objects.prefetch_related(
-                "property_units__tenant_agreement_units__tenant", "features"
-            ).filter(Q_obj_base)
+            instance = (
+                Property.objects.prefetch_related(
+                    "property_units__tenant_agreement_units__tenant", "features"
+                )
+                .filter(Q_obj_base)
+                .first()
+            )
         except:
             return Response(
                 {"data": "Property Not Found"}, status=status.HTTP_404_NOT_FOUND
@@ -201,7 +205,7 @@ class PropertyUnitCreateAPIView(APIView):
     @swagger_auto_schema(
         tags=["Property Unit"],
         operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
-        operation_summary="This endpoint is used for Property Unit Creating",
+        operation_summary="This endpoint is used for Property Unit Creating id refers to the property id",
         request_body=UnitPOSTSerializer,
         responses={
             201: UnitPOSTSerializer,
@@ -237,7 +241,7 @@ class PropertyUnitDetailAPIView(APIView):
     @swagger_auto_schema(
         tags=["Property Unit Detail"],
         operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
-        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit]",
+        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit] Fetching Based on (unit_pk), id is not matter ",
         responses={
             200: PropertyUnitGETSerializer,
         },
@@ -257,7 +261,7 @@ class PropertyUnitDetailAPIView(APIView):
     @swagger_auto_schema(
         tags=["Property Unit Detail"],
         operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
-        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit]",
+        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit] Fetching Based on (unit_pk), id is not matter ",
         request_body=UnitPOSTSerializer,
         responses={
             201: UnitPOSTSerializer,
@@ -289,7 +293,7 @@ class PropertyUnitDetailAPIView(APIView):
     @swagger_auto_schema(
         tags=["Property Unit Detail"],
         operation_description="Before Executing this endpoint try to authorize the Login add --- Bearer access_token ---",
-        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit]",
+        operation_summary="This endpoint is used for Property Unit Updating [pk is for property id] and [unit_pk is for property unit] Fetching Based on (unit_pk), id is not matter ",
         responses={
             204: "Property Unit Deleted Successfully",
         },
@@ -369,8 +373,8 @@ class TenantProfileDetailView(APIView):
     def get_tenant_object_or_404(self, id):
         try:
             return User.objects.select_related("tenant_profile").prefetch_related(
-                "tenant_agreements","tenant_documents"
-            )
+                "tenant_agreements", "tenant_documents"
+            ).get(id=id)
         except:
             raise NotFound("Tenant Not Found")
 

@@ -148,8 +148,16 @@ class TenantDocumentSerializer(serializers.ModelSerializer):
 
 class TenantGETProfileSerializer(serializers.ModelSerializer):
     profile = TenantProfileSerializer(source="tenant_profile")
-    documents = TenantDocumentSerializer(source="tenant_documents")
+    documents = TenantDocumentSerializer(source="tenant_documents",many=True)
 
     class Meta:
         model = User
-        fields = ("id", "first_name", "last_name", "email", "phone_number", "profile","documents")
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "phone_number",
+            "profile",
+            "documents",
+        )

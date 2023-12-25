@@ -14,6 +14,15 @@ def test(request):
 
 
 class TenantRegisterationAPIView(APIView):
+    @swagger_auto_schema(
+        tags=["Tenant Registeration"],
+        operation_description="Tenant Registeration is seperate you can register and login your admin to get tenant detail",
+        operation_summary="This endpoint is used for Tenant Registeration",
+        request_body=RegisterationSerializer,
+        responses={
+            201: RegisterationSerializer,
+        },
+    )
     def post(self, request):
         serializer = RegisterationSerializer(data=request.data)
         if not serializer.is_valid():
@@ -36,6 +45,6 @@ class TenantRegisterationAPIView(APIView):
 
 # for tenant and user login apiview
 
-class UserLoginAPIView(TokenObtainPairView):
 
+class UserLoginAPIView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer

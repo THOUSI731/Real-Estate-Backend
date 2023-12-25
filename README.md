@@ -4,6 +4,7 @@
 - Search Based on Many to Many field of Features Table (for Property & Property Units)
 - Tenant and Admin Authentication
 - Optimized ORM Queries
+- Documented API by Swagger (drf-yasg)
 
 ##  Instructions to Run the Code
 

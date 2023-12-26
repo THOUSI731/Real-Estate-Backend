@@ -4,9 +4,15 @@ from accounts.models import User
 
 
 class TenantProfileSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
         fields = ("profile_picture", "address", "city", "state", "country", "pin_code")
+
+    def get_profile_picture(self, obj):
+        base_url = "http://127.0.0.1:8000"
+        return f"{base_url + obj.profile_picture.url}"
 
 
 class TenantDocumentsSerializer(serializers.ModelSerializer):

@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from properties.models import Property, Unit, Feature
-from tenants.api.serializers import TenantAgreementSerializer
 from tenants.models import TenantAgreement
 from accounts.models import User
 from tenants.models import TenantDocument
+from tenants.api.serializers import TenantGETSerializer
 
 
 class PropertyPOSTSerializer(serializers.ModelSerializer):
@@ -17,6 +17,7 @@ class PropertyPOSTSerializer(serializers.ModelSerializer):
         fields = (
             "property_name",
             "property_type",
+            "property_image",
             "address",
             "city",
             "state",
@@ -45,6 +46,7 @@ class FeatureSerializer(serializers.ModelSerializer):
 
 class PropertyGETSerializer(serializers.ModelSerializer):
     features = FeatureSerializer(many=True)
+    property_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Property
@@ -52,15 +54,27 @@ class PropertyGETSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "property_type",
+            "property_image",
             "features",
         )
         read_only_fields = ("id",)
 
+    def get_property_image(self, obj):
+        base_url = "http://127.0.0.1:8000"
+        return f"{base_url + obj.property_image.url}"
+
+
+class TenantAgreementSerializer(serializers.ModelSerializer):
+    tenant = TenantGETSerializer(read_only=True)
+
+    class Meta:
+        model = TenantAgreement
+        fields = ("id", "start_date", "end_date", "monthly_rent_date","tenant")
+
 
 class PropertyUnitGETSerializer(serializers.ModelSerializer):
     features = FeatureSerializer(many=True, read_only=True)
-    # TenantAgreementSerializer from tenants.api.serializers
-    tenant_agreements = TenantAgreementSerializer(read_only=True)
+    tenant_agreements = TenantAgreementSerializer(read_only=True,many=True,source="tenant_agreement_units")
 
     class Meta:
         model = Unit
@@ -78,11 +92,14 @@ class PropertyUnitGETSerializer(serializers.ModelSerializer):
 class PropertyProfileGETSerializer(serializers.ModelSerializer):
     property_units = PropertyUnitGETSerializer(many=True, read_only=True)
     features = FeatureSerializer(many=True, read_only=True)
+    property_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Property
         fields = (
             "id",
+            "name",
+            "property_image",
             "property_type",
             "address",
             "city",
@@ -92,6 +109,11 @@ class PropertyProfileGETSerializer(serializers.ModelSerializer):
             "features",
             "property_units",
         )
+
+    def get_property_image(self, obj):
+        print(obj.property_image.url)
+        base_url = "http://127.0.0.1:8000"
+        return f"{base_url + obj.property_image.url}"
 
 
 class UnitPOSTSerializer(serializers.ModelSerializer):
@@ -134,12 +156,6 @@ class TenantAgreementPOSTSerializer(serializers.ModelSerializer):
 from tenants.api.serializers import TenantProfileSerializer
 
 
-class TenantAgreementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TenantAgreement
-        fields = ("id", "start_date", "end_date", "monthly_rent_date")
-
-
 class TenantDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TenantDocument
@@ -148,7 +164,7 @@ class TenantDocumentSerializer(serializers.ModelSerializer):
 
 class TenantGETProfileSerializer(serializers.ModelSerializer):
     profile = TenantProfileSerializer(source="tenant_profile")
-    documents = TenantDocumentSerializer(source="tenant_documents",many=True)
+    documents = TenantDocumentSerializer(source="tenant_documents", many=True)
 
     class Meta:
         model = User

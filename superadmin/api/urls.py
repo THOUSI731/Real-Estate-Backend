@@ -2,19 +2,19 @@ from django.urls import path
 from .. import views
 
 urlpatterns = [
-    path("", views.PropertyListCreateAPIView.as_view(), name="property-list-create"),
+    path("property/", views.PropertyListCreateAPIView.as_view(), name="property-list-create"),
     path(
-        "<int:pk>/",
+        "property/<int:pk>/",
         views.PropertyDetailUpdateAPIView.as_view(),
-        name="property-list-create",
+        name="property-detail-update",
     ),
     path(
-        "<int:pk>/unit/",
+        "property/<int:pk>/unit/",
         views.PropertyUnitCreateAPIView.as_view(),
-        name="property-list-create",
+        name="property-unit-list-create",
     ),
     path(
-        "<int:pk>/unit/<int:unit_pk>/",
+        "property/<int:pk>/unit/<int:unit_pk>/",
         views.PropertyUnitDetailAPIView.as_view(),
         name="property-list-create",
     ),

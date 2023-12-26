@@ -23,6 +23,7 @@ from tenants.models import TenantAgreement
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 @api_view(["GET"])
@@ -34,6 +35,7 @@ def test(request):
 class PropertyListCreateAPIView(APIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated, IsAdminUser)
+    parser_classes = (MultiPartParser, FormParser)
 
     # Here Listing All the Properties of SuperAdmin means Admin
     @swagger_auto_schema(
@@ -57,7 +59,11 @@ class PropertyListCreateAPIView(APIView):
         Q_obj_filter = Q()
         if search:
             Q_obj_filter |= Q(features__name__istartswith=search)
-        queryset = Property.objects.prefetch_related("features").filter(Q_obj_filter)
+        queryset = (
+            Property.objects.prefetch_related("features")
+            .filter(Q_obj_filter)
+            .order_by("id")
+        )
         # created pagination to reduce load time
         paginator = SmallResultPagination()
         paginated_data = paginator.paginate_queryset(queryset, request)
@@ -91,6 +97,7 @@ class PropertyListCreateAPIView(APIView):
             state=serializer.validated_data.get("state", None),
             country=serializer.validated_data.get("country", None),
             pin_code=serializer.validated_data.get("pin_code", None),
+            property_image=serializer.validated_data.get("property_image", None),
         )
         # Features is a many to many Field
         features = serializer.validated_data.get("features", None)
@@ -100,7 +107,9 @@ class PropertyListCreateAPIView(APIView):
             ]
             property_.features.add(*features_data)
             property_.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            PropertyGETSerializer(property_).data, status=status.HTTP_201_CREATED
+        )
 
 
 class PropertyDetailUpdateAPIView(APIView):
@@ -256,6 +265,7 @@ class PropertyUnitDetailAPIView(APIView):
                 {"data": "Property Unit is not Found"}, status=status.HTTP_404_NOT_FOUND
             )
         serializer = PropertyUnitGETSerializer(instance)
+        print(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -372,9 +382,11 @@ class TenantProfileDetailView(APIView):
 
     def get_tenant_object_or_404(self, id):
         try:
-            return User.objects.select_related("tenant_profile").prefetch_related(
-                "tenant_agreements", "tenant_documents"
-            ).get(id=id)
+            return (
+                User.objects.select_related("tenant_profile")
+                .prefetch_related("tenant_agreements", "tenant_documents")
+                .get(id=id)
+            )
         except:
             raise NotFound("Tenant Not Found")
 

@@ -1,4 +1,10 @@
 
+## Features
+- Fully Customized APIView
+- Search Based on Many to Many field of Features Table (for Property & Property Units)
+- Tenant and Admin Authentication
+- Optimized ORM Queries
+- Documented API by Swagger (drf-yasg)
 
 ##  Instructions to Run the Code
 
@@ -28,3 +34,6 @@
     python manage.py migrate    
     python manage.py createsuperuser
     python manage.py runserver
+6. For Api Documentation
+    ```bash
+    http://localhost:8000/swagger/

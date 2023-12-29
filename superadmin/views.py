@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -24,7 +25,6 @@ from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.parsers import MultiPartParser, FormParser
-
 
 @api_view(["GET"])
 def test(request):
@@ -224,6 +224,7 @@ class PropertyUnitCreateAPIView(APIView):
     def post(self, request, pk=None):
         serializer = UnitPOSTSerializer(data=request.data)
         if not serializer.is_valid():
+            print(serializer)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         property_ = get_object_or_404(Property, id=pk)
         unit = Unit.objects.create(
@@ -239,6 +240,14 @@ class PropertyUnitCreateAPIView(APIView):
             ]
             unit.features.add(*features_data)
             unit.save()
+        user=get_object_or_404(User,email=serializer.validated_data.get("user"))
+        TenantAgreement.objects.create(
+            tenant=user,
+            unit=unit,
+            start_date=serializer.validated_data.get("start_date",timezone.now().date()),
+            end_date=serializer.validated_data.get("end_date",timezone.now().date()),
+            monthly_rent_date=serializer.validated_data.get("monthly_rent_date",timezone.now().date())
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

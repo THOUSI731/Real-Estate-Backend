@@ -69,12 +69,14 @@ class TenantAgreementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TenantAgreement
-        fields = ("id", "start_date", "end_date", "monthly_rent_date","tenant")
+        fields = ("id", "start_date", "end_date", "monthly_rent_date", "tenant")
 
 
 class PropertyUnitGETSerializer(serializers.ModelSerializer):
     features = FeatureSerializer(many=True, read_only=True)
-    tenant_agreements = TenantAgreementSerializer(read_only=True,many=True,source="tenant_agreement_units")
+    tenant_agreements = TenantAgreementSerializer(
+        read_only=True, many=True, source="tenant_agreement_units"
+    )
 
     class Meta:
         model = Unit
@@ -111,7 +113,6 @@ class PropertyProfileGETSerializer(serializers.ModelSerializer):
         )
 
     def get_property_image(self, obj):
-        print(obj.property_image.url)
         base_url = "http://127.0.0.1:8000"
         return f"{base_url + obj.property_image.url}"
 
@@ -120,10 +121,23 @@ class UnitPOSTSerializer(serializers.ModelSerializer):
     features = serializers.ListField(
         child=serializers.CharField(min_length=5, max_length=50)
     )
+    user = serializers.CharField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+    monthly_rent_date = serializers.DateField()
 
     class Meta:
         model = Unit
-        fields = ("unit_type", "rent_cost", "unit_status", "features")
+        fields = (
+            "unit_type",
+            "rent_cost",
+            "unit_status",
+            "features",
+            "user",
+            "start_date",
+            "end_date",
+            "monthly_rent_date",
+        )
 
     def validate_features(self, value):
         return [tag.title() for tag in value]
@@ -133,6 +147,15 @@ class UnitPOSTSerializer(serializers.ModelSerializer):
 
     def unit_status(self, value):
         return value.lower()
+
+    def validate_start_date(self, value):
+        return value.split("T")[0]
+
+    def validate_end_date(self, value):
+        return value.split("T")[0]
+
+    def validate_monthly_rent_date(self, value):
+        return value.split("T")[0]
 
 
 class TenantAgreementPOSTSerializer(serializers.ModelSerializer):

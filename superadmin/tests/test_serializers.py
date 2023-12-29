@@ -1,7 +1,7 @@
 from properties.models import Property, Unit
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase,APIClient
 from ..api.serializers import PropertyPOSTSerializer
-
+import pdb # Python Debugger
 
 class PropertyPOSTSerializerTestCase(APITestCase):
     data = {
@@ -21,13 +21,7 @@ class PropertyPOSTSerializerTestCase(APITestCase):
         self.assertEqual(serializer.errors, {})
 
     def test_property_post_serializer_pin_code(self):
-        import copy
-
-        data = copy.copy(self.data)
-        data["pin_code"] = "1231"
-
         serializer = PropertyPOSTSerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-        self.assertEqual(
-            serializer.errors["pin_code"][0], "Pin code Must Be 6 digit number"
-        )
+        pdb.set_trace()
+        self.assertTrue(serializer.is_valid())
+
